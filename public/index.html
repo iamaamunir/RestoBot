@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Restaurant Chatbot</title>
+  </head>
+  <body>
+    <div class="chat-container">
+      <div class="chat-header">Restaurant Chatbot</div>
+
+      <div class="chat-input">
+        <button id="ordersButton">Select 1: Place order</button>
+        <button id="checkOutButton">Select 99: Checkout order</button>
+        <button id="OrderHistoryButton">Select 98: See order history</button>
+        <button id="CurrentOrderButton">Select 97: See Current Order</button>
+        <button id="CancelOrderButton">Select 0: Cancel Order</button>
+      </div>
+      <p id="noOrder"></p>
+      <ul id="messages" class="chat-messages"></ul>
+      <p id="order"></p>
+    </div>
+    <script>
+      let socket = new WebSocket("ws://localhost:3300");
+
+      const ordersButton = document.getElementById("ordersButton");
+
+      ordersButton.addEventListener("click", (e) => {
+        const payLoad = {
+          command: "placeOrders",
+        };
+        socket.send(JSON.stringify(payLoad));
+      });
+
+      socket.addEventListener("open", (event) => {
+        console.log("WebSocket connection established");
+      });
+
+      socket.addEventListener("message", (event) => {
+        console.log(event.data);
+        const response = JSON.parse(event.data);
+
+        console.log("40");
+        const responseList = document.getElementById("messages");
+        if (response.command === "placeOrders") {
+          responseList.innerHTML = "";
+          let orderButton;
+          response.orders.forEach((order) => {
+            const responseItem = document.createElement("li");
+            responseItem.textContent = `${order.name} - ${order.price}`;
+
+            orderButton = document.createElement("button");
+            orderButton.textContent = "Order Now";
+            orderButton.id = "orderNowId";
+            orderButton.addEventListener("click", (event) => {
+              alert(`You have ordered ${order.name}`);
+              const payLoad = {
+                command: "itemPicked",
+                orderName: order.name,
+                orderPrice: order.price,
+                orderId: order.id,
+              };
+              socket.send(JSON.stringify(payLoad));
+            });
+
+            responseItem.appendChild(orderButton);
+            responseList.appendChild(responseItem);
+          });
+        }
+      });
+    </script>
+  </body>
+</html>
