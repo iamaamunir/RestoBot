@@ -47,7 +47,7 @@ wss.on("connection", (ws, request) => {
       console.log(`Received message: ${message}`);
       const result = JSON.parse(message);
       console.log(result);
-      const userDevice = request.headers["user-agent"];
+      // const userDevice = request.headers["user-agent"];
     
       if (result.command === "placeOrders") {
         const orders = getOrders();
@@ -60,14 +60,14 @@ wss.on("connection", (ws, request) => {
       }
 
       if (result.command === "itemPicked") {
-        if (!session.orders[userDevice]) {
-          session.orders[userDevice] = [];
+        if (!session.orders[orders]) {
+          session.orders[orders] = [];
         }
-        if (!session.ordersHistory[userDevice]) {
-          session.ordersHistory[userDevice] = [];
+        if (!session.ordersHistory[orders]) {
+          session.ordersHistory[orders] = [];
         }
-        session.orders[userDevice].push(result.orderName, result.orderPrice);
-        session.ordersHistory[userDevice].push(
+        session.orders[orders].push(result.orderName, result.orderPrice);
+        session.ordersHistory[orders].push(
           result.orderName,
           result.orderPrice
         );
