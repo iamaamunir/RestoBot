@@ -2,17 +2,29 @@
 const http = require("http");
 const WebSocket = require("ws");
 const express = require("express");
-const app = express();
+// const server = express();
 const session = require("express-session");
 const MongoStore = require("connect-mongo");
 const CONFIG = require("./config/config");
+const fs = require("fs");
 
 // Serve html
-// app.get("/", (req, res) => res.sendFile(__dirname + "/index.html"));
-app.use(express.static("public"));
-app.listen(5000, () => console.log("Listening on http port 5000"));
+// server.get("/", (req, res) => res.sendFile(__dirname + "/index.html"));
+// server.use(express.static("public"));
+// server.listen(3300, () => console.log("Listening on http port 3300"));
 
-const server = http.createServer();
+const server = http.createServer((req, res) => {
+  res.setHeader("Content-Type", "text/html");
+  fs.readFile(`${__dirname}/public/index.html`, (err, data) => {
+    if (err) {
+      res.statusCode = 500;
+      res.end(`Error getting the file: ${err}.`);
+    } else {
+      res.statusCode = 200;
+      res.end(data);
+    }
+  });
+});
 const wss = new WebSocket.Server({ server });
 
 server.listen(3300, () => console.log("Listening.. on 3300"));
@@ -48,7 +60,7 @@ wss.on("connection", (ws, request) => {
       const result = JSON.parse(message);
       console.log(result);
       // const userDevice = request.headers["user-agent"];
-    
+
       if (result.command === "placeOrders") {
         const orders = getOrders();
 
@@ -58,7 +70,7 @@ wss.on("connection", (ws, request) => {
         };
         ws.send(JSON.stringify(messageData));
       }
-
+      let orders;
       if (result.command === "itemPicked") {
         if (!session.orders[orders]) {
           session.orders[orders] = [];
@@ -67,10 +79,7 @@ wss.on("connection", (ws, request) => {
           session.ordersHistory[orders] = [];
         }
         session.orders[orders].push(result.orderName, result.orderPrice);
-        session.ordersHistory[orders].push(
-          result.orderName,
-          result.orderPrice
-        );
+        session.ordersHistory[orders].push(result.orderName, result.orderPrice);
       }
 
       session.save((err) => {
