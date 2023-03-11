@@ -91,9 +91,9 @@ wss.on("connection", (ws, request) => {
       });
     });
   });
-  ws.on("close", () => {
-    console.log("Client disconnected");
-  });
+  // ws.on("close", () => {
+  //   console.log("Client disconnected");
+  // });
   function getOrders() {
     // This is just an example. You could retrieve orders from a database or API.
     return [
