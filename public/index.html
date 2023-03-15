@@ -2,26 +2,47 @@
 <html>
   <head>
     <title>Restaurant Chatbot</title>
+    <style>
+      .chat-container {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+    </style>
   </head>
   <body>
     <div class="chat-container">
       <div class="chat-header">Restaurant Chatbot</div>
-
-      <div class="chat-input">
-        <button id="ordersButton">Select 1: Place order</button>
-        <button id="checkOutButton">Select 99: Checkout order</button>
-        <button id="OrderHistoryButton">Select 98: See order history</button>
-        <button id="CurrentOrderButton">Select 97: See Current Order</button>
-        <button id="CancelOrderButton">Select 0: Cancel Order</button>
+      <div class="chat">
+        <div class="chat-input">
+          <button id="ordersButton">Select 1: Place order</button>
+          <button id="checkOutButton">Select 99: Checkout order</button>
+          <button id="OrderHistoryButton">Select 98: See order history</button>
+          <button id="CurrentOrderButton">Select 97: See Current Order</button>
+          <button id="CancelOrderButton">Select 0: Cancel Order</button>
+        </div>
       </div>
-      <p id="noOrder"></p>
-      <ul id="messages" class="chat-messages"></ul>
-      <p id="order"></p>
+      <div class="display">
+        <p id="noOrder"></p>
+        <ul id="messages" class="chat-messages"></ul>
+        <p id="order"></p>
+      </div>
     </div>
     <script>
+      // websocket  client connection
       let socket = new WebSocket("wss://restobot.onrender.com/");
 
+      // select all the buttons
       const ordersButton = document.getElementById("ordersButton");
+      const checkOutButton = document.getElementById("checkOutButton");
+      const currentOrderButton = document.getElementById("CurrentOrderButton");
+      const cancelOrderButton = document.getElementById("CancelOrderButton");
+      const orderHistoryButton = document.getElementById("OrderHistoryButton");
+      const orderResponse = document.getElementById("noOrder");
+
+      // add event listener to all the selected buttons
 
       ordersButton.addEventListener("click", (e) => {
         const payLoad = {
@@ -30,17 +51,79 @@
         socket.send(JSON.stringify(payLoad));
       });
 
+      checkOutButton.addEventListener("click", (e) => {
+        const payLoad = {
+          command: "checkOutButton",
+        };
+        socket.send(JSON.stringify(payLoad));
+      });
+
+      currentOrderButton.addEventListener("click", (e) => {
+        const payLoad = {
+          command: "currentOrder",
+        };
+        socket.send(JSON.stringify(payLoad));
+      });
+
+      cancelOrderButton.addEventListener("click", (e) => {
+        const payLoad = {
+          command: "cancelOrders",
+        };
+        socket.send(JSON.stringify(payLoad));
+      });
+
+      orderHistoryButton.addEventListener("click", (e) => {
+        const payLoad = {
+          command: "orderHistory",
+        };
+        socket.send(JSON.stringify(payLoad));
+      });
+
+      // listens for when the client connectes with the server
       socket.addEventListener("open", (event) => {
         console.log("WebSocket connection established");
       });
-
+      // listens when there is message from the server side
       socket.addEventListener("message", (event) => {
-        console.log(event.data);
+        // response from the server is parsed
         const response = JSON.parse(event.data);
 
-        console.log("40");
         const responseList = document.getElementById("messages");
+        // when the response from the server has a command of placeOrders
         if (response.command === "placeOrders") {
+          responseList.innerHTML = "";
+          orderResponse.textContent = "";
+          let orderButton;
+          // loop through the orders available
+          response.orders.forEach((order) => {
+            const responseItem = document.createElement("li");
+            responseItem.textContent = `${order.name} - ${order.price}  `;
+
+            orderButton = document.createElement("button");
+            orderButton.textContent = "Order Now";
+            orderButton.id = "orderNowId";
+            orderButton.addEventListener("click", (event) => {
+              alert(`You have ordered ${order.name}`);
+              // send back a payload for every item picked
+              const payLoad = {
+                command: "itemPicked",
+                orderName: order.name,
+                orderPrice: order.price,
+                orderId: order.id,
+              };
+              // send back the payload to the server
+              socket.send(JSON.stringify(payLoad));
+            });
+            // add button and text to the document
+            responseItem.appendChild(orderButton);
+            responseList.appendChild(responseItem);
+          });
+        }
+        // if no order was placed
+        if (response.command === "No Order") {
+          // display response message and a list of items for the user to select again if no order has been placed initially
+          orderResponse.textContent = response.message;
+          const responseList = document.getElementById("messages");
           responseList.innerHTML = "";
           let orderButton;
           response.orders.forEach((order) => {
@@ -54,6 +137,48 @@
               alert(`You have ordered ${order.name}`);
               const payLoad = {
                 command: "itemPicked",
+                orderName: order.name,
+                orderPrice: order.price,
+                orderId: order.id,
+              };
+              socket.send(JSON.stringify(payLoad));
+            });
+
+            responseItem.appendChild(orderButton);
+            responseList.appendChild(responseItem);
+          });
+        }
+        // if checkout button is clicked, display the price
+        if (response.command === "checkOut") {
+          orderResponse.textContent = response.price;
+          responseList.textContent = "";
+        }
+        // if currentOrder is picked, display all current orders
+        if (response.command === "currentOrder") {
+          orderResponse.textContent = response.currentOrder;
+        }
+        // if irder history is picked, display all checkout and current orders
+
+        if (response.command === "orderHistory") {
+          orderResponse.textContent = response.orderHistory;
+        }
+        //  if item is not be cancel, display all items
+        if (response.command === "cancel") {
+          orderResponse.textContent = response.message;
+          const responseList = document.getElementById("messages");
+          responseList.innerHTML = "";
+          let orderButton;
+          response.orders.forEach((order) => {
+            const responseItem = document.createElement("li");
+            responseItem.textContent = `${order.name} - ${order.price}`;
+
+            orderButton = document.createElement("button");
+            orderButton.textContent = "Cancel";
+            orderButton.id = "orderNowId";
+            orderButton.addEventListener("click", (event) => {
+              alert(`You have canceled ${order.name}`);
+              const payLoad = {
+                command: "itemCancel",
                 orderName: order.name,
                 orderPrice: order.price,
                 orderId: order.id,
