@@ -47,9 +47,10 @@ app.use(sessionMiddleware);
 // websocket connection
 wss.on("connection", (ws, request) => {
   console.log("Client connected");
-
   sessionMiddleware(request, {}, () => {
     //  set session to the request session
+    let session;
+
     session = request.session;
     // create a random string as session id
     const sessionId = uuid.v4();
