@@ -90,24 +90,19 @@ When you open the chatbot, you will see our main menu. The main menu includes th
 - Cancel Order: Cancel any order you have made and haven't been checked out.
 
 #### Place Order
-
-    To view our restaurant's menu and prices, click on the "Place Order" option in the main menu. You will see a list of available food you can order. Each available food comes with a "Order Now" button which when you click, an order is registered.
+To view our restaurant's menu and prices, click on the "Place Order" option in the main menu. You will see a list of available food you can order. Each available food comes with a "Order Now" button which when you click, an order is registered.
 
 #### CheckOut Order
-
-    To check out your order, click on the "CheckOut Order" option to see your total price. If you haven't made an order yet, then you will be given options to pick a food item.
+To check out your order, click on the "CheckOut Order" option to see your total price. If you haven't made an order yet, then you will be given options to pick a food item.
 
 #### Order History
-
-    To see a history of order you have made before, click on the "See Order History" to see all the orders which have been checkout and otherwise. If you haven't made an order yet, then you will be given options to pick a food item.
+To see a history of order you have made before, click on the "See Order History" to see all the orders which have been checkout and otherwise. If you haven't made an order yet, then you will be given options to pick a food item.
 
 #### Current Order
-
-    To see all current orders you have made and haven't checked out yet, you can click the "See Current Order" option. If you haven't made an order yet, then you will be given options to pick a food item.
+To see all current orders you have made and haven't checked out yet, you can click the "See Current Order" option. If you haven't made an order yet, then you will be given options to pick a food item.
 
 #### Cancel Order
-
-    To cancel a particular order you have made, you can click the "Cancel Order" option. You will see all item you have made and you can cancel any order that you want to order.
+To cancel a particular order you have made, you can click the "Cancel Order" option. You will see all item you have made and you can cancel any order that you want to order.
 
 ---
 
