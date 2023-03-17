@@ -1,8 +1,6 @@
 // import third party packages and OS modules
 const http = require("http");
 const WebSocket = require("ws");
-
-const uuid = require("uuid");
 const session = require("express-session");
 const MongoStore = require("connect-mongo");
 const CONFIG = require("./config/config");
@@ -52,9 +50,7 @@ wss.on("connection", (ws, request) => {
     let session;
 
     session = request.session;
-    // create a random string as session id
-    const sessionId = uuid.v4();
-    session.id = sessionId;
+
     // console.log(sessionId);
     // create session orders object
     if (!session.orders) {
@@ -68,12 +64,9 @@ wss.on("connection", (ws, request) => {
     ws.on("message", (message) => {
       console.log(`Received message: ${message}`);
       const result = JSON.parse(message);
-      console.log(result);
+
       const userDevice = request.headers["user-agent"];
-      if (session) {
-        session.id = sessionId;
-        console.log(session.id);
-      }
+
       if (result.command === "placeOrders") {
         const orders = getOrders();
 
@@ -132,39 +125,97 @@ wss.on("connection", (ws, request) => {
       }
       if (result.command === "currentOrder") {
         const currentOrder = session.orders[userDevice];
-        const messageData = {
-          command: "currentOrder",
-          currentOrder: currentOrder,
-        };
+        if (
+          session.orders[userDevice] === undefined ||
+          session.orders[userDevice] === null
+        ) {
+          const orders = getOrders();
+          const messageData = {
+            command: "No Order",
+            message: "You haven't placed an order. Please place an order",
+            orders: orders,
+          };
+          ws.send(JSON.stringify(messageData));
+        } else if (session.orders[userDevice].length !== 0) {
+          const result = [];
 
-        ws.send(JSON.stringify(messageData));
+          for (let i = 0; i < currentOrder.length; i += 2) {
+            const name = currentOrder[i];
+            const price = currentOrder[i + 1];
+
+            result.push({ name, price });
+          }
+          console.log(result);
+          const messageData = {
+            command: "currentOrder",
+            currentOrder: result,
+          };
+
+          ws.send(JSON.stringify(messageData));
+        }
       }
       if (result.command === "orderHistory") {
-        const messageData = {
-          command: "orderHistory",
-          orderHistory: session.ordersHistory[userDevice],
-        };
+        const orderHistory = session.ordersHistory[userDevice];
+        if (
+          session.orders[userDevice] === undefined ||
+          session.orders[userDevice] === null
+        ) {
+          const orders = getOrders();
+          const messageData = {
+            command: "No Order",
+            message: "You haven't placed an order. Please place an order",
+            orders: orders,
+          };
+          ws.send(JSON.stringify(messageData));
+        } else if (session.orders[userDevice].length !== 0) {
+          const result = [];
 
-        ws.send(JSON.stringify(messageData));
+          for (let i = 0; i < orderHistory.length; i += 2) {
+            const name = orderHistory[i];
+            const price = orderHistory[i + 1];
+
+            result.push({ name, price });
+          }
+          const messageData = {
+            command: "orderHistory",
+            orderHistory: result,
+          };
+
+          ws.send(JSON.stringify(messageData));
+        }
       }
       if (result.command === "cancelOrders") {
         if (session.orders[userDevice]) {
-          const orders = getOrders();
+          const orders = session.orders[userDevice];
+          console.log(orders);
+          const result = [];
+
+          for (let i = 0; i < orders.length; i += 2) {
+            const name = orders[i];
+            const price = orders[i + 1];
+
+            result.push({ name, price });
+          }
+          console.log(result);
           const messageData = {
             command: "cancel",
             message: "Pick an order to cancel",
-            orders: orders,
+            orders: result,
+          };
+          ws.send(JSON.stringify(messageData));
+        } else if (
+          session.orders[userDevice] === undefined ||
+          session.orders[userDevice] === null
+        ) {
+          const messageData = {
+            command: "no item",
+            message: "You haven't ordered anything yet",
           };
           ws.send(JSON.stringify(messageData));
         }
       }
       if (result.command === "itemCancel") {
-        console.log("150");
-        if (
-          result.orderId === 1 ||
-          result.orderId === 2 ||
-          result.orderId === 3
-        ) {
+        {
           const indexToRemove = session.orders[userDevice].indexOf(
             result.orderName
           );
@@ -172,7 +223,7 @@ wss.on("connection", (ws, request) => {
           session.orders[userDevice].splice(indexToRemove, 2), result.orderId;
         }
       }
-      console.log(session);
+
       session.save((err) => {
         if (err) {
           console.error(err);

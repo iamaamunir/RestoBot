@@ -2,7 +2,25 @@
 <html>
   <head>
     <title>Restaurant Chatbot</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Rubik+Iso&display=swap"
+      rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500&family=Rubik+Iso&display=swap"
+      rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Roboto+Mono:wght@400;500&family=Rubik+Iso&display=swap"
+      rel="stylesheet" />
     <style>
+      body {
+        background: linear-gradient(
+          90deg,
+          rgba(253, 138, 138, 1) 34%,
+          rgba(241, 247, 181, 1) 79%
+        );
+      }
       .chat-container {
         display: flex;
         flex-direction: column;
@@ -10,11 +28,43 @@
         align-items: center;
         height: 100vh;
       }
+      .chat-header {
+        font-family: "Rubik Iso", cursive;
+        position: absolute;
+        top: 20%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        letter-spacing: 3px;
+        /* width: 500px; */
+      }
+      button {
+        padding: 5px 10px;
+        border-radius: 5px;
+        border: none;
+        cursor: pointer;
+        font-size: 18px;
+        font-weight: bold;
+        text-align: center;
+        text-transform: uppercase;
+        margin-bottom: 5px;
+        letter-spacing: 3px;
+        font-family: "Bebas Neue", cursive;
+      }
+      button:hover {
+        color: #a8d1d1;
+      }
+      p {
+        font-family: "Roboto Mono", monospace;
+        font-size: 20px;
+      }
     </style>
   </head>
   <body>
+    <div class="chat-header">
+      <h1>WELCOME TO RESTOBOT.</h1>
+    </div>
+
     <div class="chat-container">
-      <div class="chat-header">Restaurant Chatbot</div>
       <div class="chat">
         <div class="chat-input">
           <button id="ordersButton">Select 1: Place order</button>
@@ -32,7 +82,7 @@
     </div>
     <script>
       // websocket  client connection
-      let socket = new WebSocket("wss://restobot.onrender.com/");
+      let socket = new WebSocket("ws://localhost:3300");
 
       // select all the buttons
       const ordersButton = document.getElementById("ordersButton");
@@ -41,6 +91,7 @@
       const cancelOrderButton = document.getElementById("CancelOrderButton");
       const orderHistoryButton = document.getElementById("OrderHistoryButton");
       const orderResponse = document.getElementById("noOrder");
+      const responseList = document.getElementById("messages");
 
       // add event listener to all the selected buttons
 
@@ -98,7 +149,8 @@
           response.orders.forEach((order) => {
             const responseItem = document.createElement("li");
             responseItem.textContent = `${order.name} - ${order.price}  `;
-
+            (responseItem.style.fontFamily = "Roboto Mono"), "monospace";
+            responseItem.style.fontSize = "20px";
             orderButton = document.createElement("button");
             orderButton.textContent = "Order Now";
             orderButton.id = "orderNowId";
@@ -123,13 +175,13 @@
         if (response.command === "No Order") {
           // display response message and a list of items for the user to select again if no order has been placed initially
           orderResponse.textContent = response.message;
-          const responseList = document.getElementById("messages");
           responseList.innerHTML = "";
           let orderButton;
           response.orders.forEach((order) => {
             const responseItem = document.createElement("li");
             responseItem.textContent = `${order.name} - ${order.price}`;
-
+            (responseItem.style.fontFamily = "Roboto Mono"), "monospace";
+            responseItem.style.fontSize = "20px";
             orderButton = document.createElement("button");
             orderButton.textContent = "Order Now";
             orderButton.id = "orderNowId";
@@ -151,16 +203,39 @@
         // if checkout button is clicked, display the price
         if (response.command === "checkOut") {
           orderResponse.textContent = response.price;
+
           responseList.textContent = "";
         }
         // if currentOrder is picked, display all current orders
         if (response.command === "currentOrder") {
-          orderResponse.textContent = response.currentOrder;
+          orderResponse.textContent = "";
+
+          let responseItem;
+          responseList.textContent = "";
+
+          response.currentOrder.forEach((order) => {
+            responseItem = document.createElement("li");
+            responseItem.textContent = `${order.name} - ${order.price}`;
+            (responseItem.style.fontFamily = "Roboto Mono"), "monospace";
+            responseItem.style.fontSize = "20px";
+            responseList.appendChild(responseItem);
+          });
         }
         // if irder history is picked, display all checkout and current orders
 
         if (response.command === "orderHistory") {
-          orderResponse.textContent = response.orderHistory;
+          // let responseItem;
+          responseList.textContent = "";
+          orderResponse.textContent = "";
+          response.orderHistory.forEach((order) => {
+            const responseItem = document.createElement("li");
+            responseItem.textContent = `${order.name} - ${order.price}`;
+
+            (responseItem.style.fontFamily = "Roboto Mono"), "monospace";
+            responseItem.style.fontSize = "20px";
+
+            responseList.appendChild(responseItem);
+          });
         }
         //  if item is not be cancel, display all items
         if (response.command === "cancel") {
@@ -171,7 +246,8 @@
           response.orders.forEach((order) => {
             const responseItem = document.createElement("li");
             responseItem.textContent = `${order.name} - ${order.price}`;
-
+            (responseItem.style.fontFamily = "Roboto Mono"), "monospace";
+            responseItem.style.fontSize = "20px";
             orderButton = document.createElement("button");
             orderButton.textContent = "Cancel";
             orderButton.id = "orderNowId";
@@ -189,6 +265,9 @@
             responseItem.appendChild(orderButton);
             responseList.appendChild(responseItem);
           });
+        }
+        if (response.command === "no item") {
+          orderResponse.textContent = response.message;
         }
       });
     </script>
