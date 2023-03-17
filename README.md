@@ -117,7 +117,7 @@ When you open the chatbot, you will see our main menu. The main menu includes th
 
 - Twitter: [@iamaamunir](https://twitter.com/iamaamunir)
 - Github: [@iamaamunir](https://github.com/iamaamunir)
-- LinkedIn: [@Munir Abdullahi](https://linkedin.com/in/oluwaseun-awosise)
+- LinkedIn: [@Munir Abdullahi](https://www.linkedin.com/in/aamunir100)
 - Project Link: [RestoBot](https://github.com/iamaamunir/RestoBot)
 
 <!-- Markdown Links & Images -->
